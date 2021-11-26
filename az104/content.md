@@ -20,6 +20,14 @@ Tabla de contenidos para la certificación Az-104
       - [Azure Policy](#azure-policy)
       - [Resource locks](#resource-locks)
       - [Resource groups](#resource-groups)
+  - [Implement and manage storage](#implement-and-manage-storage)
+    - [Azure Storage data objects](#azure-storage-data-objects)
+    - [Storage accounts](#storage-accounts)
+      - [Storage account endpoints](#storage-account-endpoints)
+      - [Performance tiers](#performance-tiers)
+      - [Access tiers](#access-tiers)
+      - [Sobre redundancia](#sobre-redundancia)
+      - [Sobre acceso y autorización](#sobre-acceso-y-autorización)
 
 ## Azure Active Directory
 
@@ -222,3 +230,77 @@ New-AzResourceLock -LockLevel CanNotDelete -LockName $lockName -ResourceName $re
 Algunos recursos se pueden  mover entre grupos de recursos y suscripciones.
 
 Lo que no cambia es la localización del recurso.
+
+## Implement and manage storage
+
+### Azure Storage data objects
+
+Tipos de objeto:
+
+- Blob
+- File
+- Queue
+- Table
+- Disks
+
+### Storage accounts
+
+Alta disponibilidad, puede contener todo los Azure storage objects, con namespaces únicos para acceder a elementos almacenados.
+
+Tipos:
+
+- General-purpose v2
+- General-purpose v1
+- BlockBlobStorage
+- FileStorage
+- BlobStorage
+
+#### Storage account endpoints
+
+- Azure Blob
+  - az-storage.blob.core.windows.net
+- Azure Table
+  - az-storage.table.core.windows.net
+- Azure Queue
+  - az-storage.queue.core.windows.net
+- Azure File
+  - az-storage.file.core.windows.net
+
+La ruta a un fichero bien puede ser, dependiendo del tipo:
+
+`https://(storageacc-name).(type).core.windows.net/(container-name)/(file-name)`
+
+#### Performance tiers
+
+- Standard
+  - Con backup para recuperación de datos ante desastres
+  - Disponible para almacenar imágenes y vídeos
+- Premium
+  - Disponible para BlockBlobStorage, FileStorage GPv1+2
+  - Interactivo
+  - Con analíticas y servicios de AI/ML
+
+Una vez se ha desplegado, no se puede modificar su performance tier.
+
+#### Access tiers
+
+- Hot: mayor coste de almacenamiento, menor coste de acceso
+- Cool: menor coste de almacenamiento, mayor coste de acceso, 30 días mínimo
+- Archive: menor coste de almacenamiento, mayor coste de acceso, 180 días mínimo
+
+#### Sobre redundancia
+
+Depende de cuantas regiones con la que estés operando.
+
+- LRS
+- ZRS
+- GRS
+- GZRS
+
+![Azure storage durability and availability scenarios](../imgs/az104-storageaccs-redundancy.png)
+
+![Azure storage account supported capabilities](../imgs/az104-storageaccs-capabilities.png)
+
+#### Sobre acceso y autorización
+
+![Authorizing access to storage data](../imgs/az104-storageaccs-access.png)
