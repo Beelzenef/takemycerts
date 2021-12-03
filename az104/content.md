@@ -303,4 +303,44 @@ Depende de cuantas regiones con la que estés operando.
 
 #### Sobre acceso y autorización
 
+De forma anónima, solo es posible acceder a Azure blobs.
+
+Para autenticación, podemos acceder por varias vías:
+
+- Shared Key authorization
+- Shared Access Signatures (SAS)
+- Azure Active Directory (AD)
+
 ![Authorizing access to storage data](../imgs/az104-storageaccs-access.png)
+
+Para Shared Access Key authorization, es importante tener en cuenta la siguientes consideraciones:
+
+- Por defecto, tenemos dos *keys* generadas
+- Con esas keys, tenemos acceso a toda la *storage account*
+- Las *keys* se pueden regenerar
+- Se recomienda regenerarlas de forma periódica
+- Azure Active Directory es una opción recomendada a este método
+
+Shared Access Signatures se pueden aplicar a:
+
+- User delegation
+- Service
+- Account
+
+Se pueden granular los siguientes parámetros
+
+- Servicios a los que se te permite acceder: Blob, File, Queue o Table
+- Tipos de recursos permitidos: service, container u object
+- Permisos: lectura, escritura, eliminación...
+- HTTP o HTTPS
+- Permitir o no borrado de versiones
+- Fecha y hora de inicio y fin para estos permisos
+- Limitación a IPs específicas
+
+Una vez definido, generamos una SAS para que se nos ofrecen *token*, *connection string*... **solo visibles una vez, así que será conveniente guardarlo en un Key Vault**.
+
+Para la autorización con Azure Active Directory:
+
+- Solo soporta storage para Blob y Queue
+- Utiliza RBAC
+- Es el método recomendado por Microsoft
