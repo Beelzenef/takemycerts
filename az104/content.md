@@ -28,6 +28,11 @@ Tabla de contenidos para la certificación Az-104
       - [Access tiers](#access-tiers)
       - [Sobre redundancia](#sobre-redundancia)
       - [Sobre acceso y autorización](#sobre-acceso-y-autorización)
+    - [Azure File Shares](#azure-file-shares)
+    - [Azure Blob Storage](#azure-blob-storage)
+      - [Replicación de blob objects](#replicación-de-blob-objects)
+    - [Data en Azure Storage](#data-en-azure-storage)
+  - [Virtual machines](#virtual-machines)
 
 ## Azure Active Directory
 
@@ -344,3 +349,143 @@ Para la autorización con Azure Active Directory:
 - Solo soporta storage para Blob y Queue
 - Utiliza RBAC
 - Es el método recomendado por Microsoft
+
+### Azure File Shares
+
+Crear un File Share desde Powershell:
+
+```ps
+az storage share create \
+  --account-name $saName \
+  --account-key $saKey \
+  --name $shareName \
+  --quota $gbQuota
+```
+
+Creando un directorio en un File Share:
+
+```ps
+az storage directory create \
+  --account-name $saName \
+  --account-key $saKey \
+  --share-name $shareName \
+  --name $directoryName
+```
+
+Cargar ficheros a un File Share
+
+```ps
+az storage file upload \
+  --account-name $saName \
+  --account-key $saKey \
+  --share-name $shareName \
+  --source $filePath \
+  --path $pathToUpload
+```
+
+### Azure Blob Storage
+
+Un BLOB es un *binary large objects*, u objetos binarios de gran tamaño. Son datos sin estructura, de múltiples tipos.
+
+Pueden ser de los siguientes tipos:
+
+- Block
+- Append
+- Page
+
+Una *storage account* puede contener un número ilimitado de *containers*, que funcionan como directorios, y estos pueden contener un número ilimitado de *blobs*.
+
+Pueden ser imágenes, vídeos, logs...
+
+Un ejemplo de ruta a un blob puede ser:
+
+`wikkaStorage.blob.core.windows.net/media/img1.png`
+
+Podemos configurar un storage account con varias opciones:
+
+- *Soft block* para blobs
+- *Point-in-time restore* para *containers*
+- Versionado
+- Feed de cambios
+- Tier de acceso (cool o hot)
+- Acceso públic o o no
+
+Podemos asignar un dominio custom a un *container*.
+
+Existen tres tipos de tiers de acceso:
+
+- Hot
+- Cool
+- Archive
+
+Se puede automatizar el cambio de *access tier* dependiendo de la actividad que tengamos sobre los blobs.
+
+Selecciona un fichero, un *blob*, en el *container* y pulsa en "Change tier" para guardar su tier.
+
+Dentro de la *storage account*, tenemos la Lifecycle Management blade. Desde ahí podemos crear reglas para, dependiendo del tipo y otras variables, podemos automatizar el cambio automatizado de tier de los diferentes blobs.
+
+Estas reglas se pueden modificar en formato JSON, como si fueran una plantilla ARM.
+
+#### Replicación de blob objects
+
+Es la creación asíncrona de copias de block blobs entre *storage accounts*. Se minimiza la latencia, se gana eficiencia en *compute workloads*, se optimiza la distribución de datos, se optimizan costes.
+
+No hay soporte para *snapshots*, y solo se puede realizar en blobs con tier *hot* y *cool*.
+
+Se requieren datos de origen y destino, así como contenedores generados antes de la replicación.
+
+En la Object replication blade, se configura la replicación de datos, así como las reglas para encontrar aquellos blobs que queremos replicar, fechas y demás...
+
+Para revisar las reglas de replicación:
+
+```ps
+az storage blob show \
+  --account-name $saName \
+  --container-name $container \
+  --name $fileName \
+  --query 'objectReplicationSourceProperties[].rules[].status' \
+  --output tsv \
+  --account-key $key
+```
+
+### Data en Azure Storage
+
+...
+
+## Virtual machines
+
+¿Qué recursos necesita una VM?
+
+- Resource Group
+- Storage account
+- Virtual network
+- Public IP, no obligatorio
+- Network interface
+- Data disks, no obligatorio
+
+![Todos los grupos de recursos, required o no, para una VM](../imgs/az104-vmresources.png)
+
+```ps
+New-AzVM -ResourceGroupName $rgName `
+    -Name $vmName `
+    -Location $location `
+    -VirtualNetworkName $vnName `
+    -SubnetName $subnet `
+    -SecurityGroupName $sgName `
+    -PublicIpAddressName $ipName `
+    -OpenPorts $portList
+```
+
+En Azure CLI:
+
+```ps
+az vm create --resource-Group $rgName --name $vmName \
+    --image $image --admin-username $username
+```
+
+Consideraciones a la hora de mover máquinas virtuales:
+
+- Todos los recursos de virtual network deben moverse también cuando cambias de suscripción
+- Scale sets con Load balancers y PIP standar no se pueden mover
+- Máquinas virtuales con Key vault integrado para encriptación de datos no se pueden mover
+- Las máquinas virtuales con Azure Backup deben borrar sus puntos de restauración antes de ser movidas
